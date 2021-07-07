@@ -16,16 +16,19 @@ def display_map(mapname): # takes the full map name as a string parameter
                 print(map["authors"][0]["name"])
 
             elif len(map["authors"]) == 2: # print two authors joined by and
-                #print(' and '.join(map["authors"].items()))
-                print(map["authors"][0]["name"] + 'and' + map["authors"][1]["name"])
+                print(map["authors"][0]["name"] + ' and ' + map["authors"][1]["name"])
 
-            else:
-                #for i in map["authors"]: # map author for loop
-                print("j")
+            else: # for three or more, join all the authors with commar except for the last, joined by and
+                numauthors = len(map["authors"]) # store number of authors in a variable
+
+                for i in range(0, numauthors - 2): # for loop will iterate through all authors except the last 2
+                    print(map["authors"][i]["name"] + ', ', end='') # end='' parameter to make print function not end with newline.
+                
+                print(map["authors"][numauthors-2]["name"]+' and '+map["authors"][numauthors-1]["name"]) # print the last two authors joined by 'and'
             
                 
 
-        else: # there is some sort of error
+        else: # there is some sort of http error
             print(resp.status_code + ' error') # output the error code
 
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
@@ -49,7 +52,7 @@ def main(argv): # takes array of options and arguments
             else: # 2-5 results were found
                 print('TEST')
 
-        else: # there is some sort of error
+        else: # there is some sort of http error
             print(resp.status_code + ' error') # output the error code
 
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
