@@ -9,6 +9,7 @@ def display_map(mapname): # takes the full map name as a string parameter
         if resp.status_code == 200: # make sure response 200 OK before parsing json response
             map = json.loads(resp.text) # loads json as python dictionary
 
+            # print map name
             print(map["map_info"]["name"] + ' by ', end='') # end='' parameter to make print function not end with newline.
             
             # print map authors differently depending on how many of them there are
@@ -26,6 +27,8 @@ def display_map(mapname): # takes the full map name as a string parameter
                 
                 print(map["authors"][numauthors-2]["name"]+' and '+map["authors"][numauthors-1]["name"]) # print the last two authors joined by 'and'
             
+            # print tier info
+            print('Solly T'+str(map["tier_info"]["soldier"])+' | Demo T'+str(map["tier_info"]["demoman"]))
                 
 
         else: # there is some sort of http error
