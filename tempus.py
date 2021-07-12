@@ -28,7 +28,7 @@ def display_map(mapname): # takes the full map name as a string parameter
                 print(map["authors"][numauthors-2]["name"]+' and '+map["authors"][numauthors-1]["name"]) # print the last two authors joined by 'and'
             
             # print tier info
-            print('Solly T'+str(map["tier_info"]["soldier"])+' | Demo T'+str(map["tier_info"]["demoman"]))
+            print('Solly T'+str(map["tier_info"]["soldier"])+' | Demo T'+str(map["tier_info"]["demoman"])) # tier info value must be casted to string in order to be printed
                 
 
         else: # there is some sort of http error
@@ -37,31 +37,36 @@ def display_map(mapname): # takes the full map name as a string parameter
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def main(argv): # takes array of options and arguments
-    query = input('Search for a map: ') # scanner to read input
+def search_map(): # handles looking up maps
+    query = input('Search for a map (!q to go back): ').lower() # scanner to read input, convert to lower case
 
-    try: # attempt to send request
-        resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+    while query != '!q':
 
-        if resp.status_code == 200: # make sure response 200 OK before parsing json response
-            j = json.loads(resp.text) # loads json as python dictionary
-            
-            if len(j["maps"]) > 5: # the query returned more than 5 results (API already handles this but this is here just in case)
-                print('Too many results. Please enter a more specific query.')
-            
-            elif len(j["maps"]) == 1: # one exact match was found
-                display_map(j["maps"][0]["name"])
+        try: # attempt to send request
+            resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+
+            if resp.status_code == 200: # make sure response 200 OK before parsing json response
+                j = json.loads(resp.text) # loads json as python dictionary
                 
-            else: # 2-5 results were found
-                print('TEST')
+                if len(j["maps"]) > 5: # the query returned more than 5 results (API already handles this but this is here just in case)
+                    print('Too many results. Please enter a more specific query.')
+                
+                elif len(j["maps"]) == 1: # one exact match was found
+                    display_map(j["maps"][0]["name"])
+                    
+                else: # 2-5 results were found
+                    print('TEST')
 
-        else: # there is some sort of http error
-            print(resp.status_code + ' error') # output the error code
+            else: # there is some sort of http error
+                print(resp.status_code + ' error') # output the error code
 
-    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
-        raise SystemExit(e)
+        except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+            raise SystemExit(e)
 
+        query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
+def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
+    search_map()
 
-if __name__ == "__main__":
+if __name__ == "__main__": # only run main function if this file is not ran as a module
     main(sys.argv[1:]) # pass all arguments except for the first (the filename itself)
