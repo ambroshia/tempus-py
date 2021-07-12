@@ -14,7 +14,9 @@ def display_map(mapname): # takes the full map name as a string parameter
             print(m["map_info"]["name"] + ' by ', end='') # end='' parameter to make print function not end with newline.
             
             # print map authors differently depending on how many of them there are
-            if len(m["authors"]) == 1: # only one author; just print it
+            if len(m["authors"]) == 0: # api returned no authors
+                print('N/A')
+            elif len(m["authors"]) == 1: # only one author; just print it
                 print(m["authors"][0]["name"])
             elif len(m["authors"]) == 2: # print two authors joined by and
                 print(m["authors"][0]["name"] + ' and ' + m["authors"][1]["name"])
@@ -89,6 +91,9 @@ def search_map(): # handles looking up maps
                 
                 elif len(j["maps"]) == 1: # one exact match was found
                     display_map(j["maps"][0]["name"])
+
+                elif len(j["maps"]) == 0: # no maps containing the string was found
+                    print('No maps with a matching name was found.')
                     
                 else: # 2-5 results were found
                     choose_one_map(j["maps"]) # pass dict of maps to function to handle multiple results
