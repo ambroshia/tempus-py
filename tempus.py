@@ -7,29 +7,29 @@ def display_map(mapname): # takes the full map name as a string parameter
         resp = requests.get('https://tempus.xyz/api/maps/name/' + mapname + '/fullOverview') # query map overview info
 
         if resp.status_code == 200: # make sure response 200 OK before parsing json response
-            map = json.loads(resp.text) # loads json as python dictionary
+            m = json.loads(resp.text) # loads json as python dictionary
 
             # print map name
-            print(map["map_info"]["name"] + ' by ', end='') # end='' parameter to make print function not end with newline.
+            print(m["map_info"]["name"] + ' by ', end='') # end='' parameter to make print function not end with newline.
             
             # print map authors differently depending on how many of them there are
-            if len(map["authors"]) == 1: # only one author; just print it
-                print(map["authors"][0]["name"])
-
-            elif len(map["authors"]) == 2: # print two authors joined by and
-                print(map["authors"][0]["name"] + ' and ' + map["authors"][1]["name"])
-
+            if len(m["authors"]) == 1: # only one author; just print it
+                print(m["authors"][0]["name"])
+            elif len(m["authors"]) == 2: # print two authors joined by and
+                print(m["authors"][0]["name"] + ' and ' + m["authors"][1]["name"])
             else: # for three or more, join all the authors with commar except for the last, joined by and
-                numauthors = len(map["authors"]) # store number of authors in a variable
+                numauthors = len(m["authors"]) # store number of authors in a variable
 
                 for i in range(0, numauthors - 2): # for loop will iterate through all authors except the last 2
-                    print(map["authors"][i]["name"] + ', ', end='') # end='' parameter to make print function not end with newline.
+                    print(m["authors"][i]["name"] + ', ', end='') # end='' parameter to make print function not end with newline.
                 
-                print(map["authors"][numauthors-2]["name"]+' and '+map["authors"][numauthors-1]["name"]) # print the last two authors joined by 'and'
+                print(m["authors"][numauthors-2]["name"]+' and '+m["authors"][numauthors-1]["name"]) # print the last two authors joined by 'and'
             
             # print tier info
-            print('Solly T'+str(map["tier_info"]["soldier"])+' | Demo T'+str(map["tier_info"]["demoman"])) # tier info value must be casted to string in order to be printed
+            print('Solly T'+str(m["tier_info"]["soldier"])+' | Demo T'+str(m["tier_info"]["demoman"])) # tier info value must be casted to string in order to be printed
                 
+            # print course info
+            #print(m["zone_counts"]["linear"])
 
         else: # there is some sort of http error
             print(resp.status_code + ' error') # output the error code
@@ -58,7 +58,6 @@ def choose_one_map(maps): # prompts user to choose one map from 2-5 results
         
         index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
     
-
 def search_map(): # handles looking up maps
     query = input('Search for a map (!q to go back): ').lower() # scanner to read input, convert to lower case
 
