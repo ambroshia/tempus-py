@@ -8,6 +8,7 @@ def display_map(mapname): # takes the full map name as a string parameter
 
         if resp.status_code == 200: # make sure response 200 OK before parsing json response
             m = json.loads(resp.text) # loads json as python dictionary
+            print() # newline for formatting
 
             # print map name
             print(m["map_info"]["name"] + ' by ', end='') # end='' parameter to make print function not end with newline.
@@ -29,7 +30,21 @@ def display_map(mapname): # takes the full map name as a string parameter
             print('Solly T'+str(m["tier_info"]["soldier"])+' | Demo T'+str(m["tier_info"]["demoman"])) # tier info value must be casted to string in order to be printed
                 
             # print course info
-            #print(m["zone_counts"]["linear"])
+            if "linear" in m["zone_counts"]: # if map is linear, key "linear" will exist in the dictionary
+                print('Linear, ', end='')
+            else: # if it isn't linear, it will have courses
+                print(str(m["zone_counts"]["course"]) + ' courses, ', end='')
+
+            # print bonus info (if any)
+            if "bonus" in m["zone_counts"]: # if there are bonuses, key "bonus" will exist
+                print(str(m["zone_counts"]["bonus"]) + ' bonus', end='')
+                if m["zone_counts"]["bonus"] > 1:  # if there is more than one bonus, it should print bonusES instead
+                    print('es', end='')
+                print() # newline for formatting
+            else: # there are no bonuses
+                print('no bonuses')
+
+            print() # newline for formatting
 
         else: # there is some sort of http error
             print(resp.status_code + ' error') # output the error code
