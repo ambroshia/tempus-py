@@ -2,6 +2,41 @@ import sys
 import json
 import requests
 
+def display_player(playerid): # takes tempus user id as string param
+
+def choose_one_player(players): # takes dictionary of 2-20 users returned from query
+
+def search_player():
+    query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
+
+    while query != '!q': # !q is the string that allows user to exit from the function
+
+        try: # attempt to send request
+            resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+
+            if resp.status_code == 200: # make sure response 200 OK before parsing json response
+                j = json.loads(resp.text) # loads json as python dictionary
+                
+                if len(j["players"]) > 20: # the query returned more than 20 results (API already handles this but this is here just in case)
+                    print('Too many results. Please enter a more specific query.')
+                
+                elif len(j["players"]) == 1: # one exact match was found
+                    display_player(j["players"][0]["id"])
+
+                elif len(j["players"]) == 0: # no players with name containing the string was found
+                    print('No players with a matching name was found.')
+                    
+                else: # 2-20 results were found
+                    choose_one_player(j["players"]) # pass dict of players to function to handle multiple results
+
+            else: # there is some sort of http error
+                print(resp.status_code + ' error') # output the error code
+
+        except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+            raise SystemExit(e)
+
+        query = input('Search for a player (!q to go back): ').lower() # need to put scanner again here to prompt user input
+
 def display_map(mapname): # takes the full map name as a string parameter
     try: # attempt to send request
         resp = requests.get('https://tempus.xyz/api/maps/name/' + mapname + '/fullOverview') # query map overview info
@@ -54,7 +89,7 @@ def display_map(mapname): # takes the full map name as a string parameter
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def choose_one_map(maps): # prompts user to choose one map from 2-5 results
+def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query
     print(str(len(maps)) + ' partial matches found:')
 
     for i in range(0, len(maps)): # range() is used because the index number needs to be printed
@@ -75,7 +110,7 @@ def choose_one_map(maps): # prompts user to choose one map from 2-5 results
         
         index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
     
-def search_map(): # handles looking up maps
+def search_map():
     query = input('Search for a map (!q to go back): ').lower() # scanner to read input, convert to lower case
 
     while query != '!q': # !q is the string that allows user to exit from the function
@@ -112,7 +147,7 @@ def main(argv): # takes array of options and arguments. Main is at the bottom be
         
     while choice != '!q':
         if choice == '1': # call user query function
-            print('search player')
+            search_player()
         elif choice == '2': # call map query function
             search_map()
         else: # display error msg
