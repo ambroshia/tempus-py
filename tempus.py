@@ -107,7 +107,21 @@ def search_map(): # handles looking up maps
         query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
-    search_map()
+    print('tempus.py\n 1. Query users\n 2. Query maps') # list choices
+    choice = input('Enter the number next to the feature you want to access (!q to quit): ') # scanner to read input
+        
+    while choice != '!q':
+        if choice == '1': # call user query function
+            print('search player')
+        elif choice == '2': # call map query function
+            search_map()
+        else: # display error msg
+            print('Invalid input, please enter one of the displayed numbers.')
 
-if __name__ == "__main__": # only run main function if this file is not ran as a module
+        print('tempus.py\n 1. Query users\n 2. Query maps') # re-list choices for while loop
+        choice = input('Enter the number next to the feature you want to access (!q to quit): ')
+
+    sys.exit() # if user quits at feature menu the program terminates
+
+if __name__ == '__main__': # only run main function if this file is not ran as a module
     main(sys.argv[1:]) # pass all arguments except for the first (the filename itself)
