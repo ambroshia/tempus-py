@@ -3,7 +3,24 @@ import json
 import requests
 
 def display_player(playerid): # takes tempus user id as param
-    print(playerid)
+    try: # attempt to send request
+        resp = requests.get('https://tempus.xyz/api/players/id/' + str(playerid) + '/stats') # query user details
+
+        if resp.status_code == 200: # make sure response 200 OK before parsing json response
+            p = json.loads(resp.text) # loads json as python dictionary
+            print() # newline for formatting
+
+            # print name and country
+            print(p["player_info"]["name"]) 
+            print('Country: ' + p["player_info"]["country"])
+
+            print() # newline for formatting
+
+        else: # there is some sort of http error
+            print(resp.status_code + ' error') # output the error code
+
+    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+        raise SystemExit(e)
 
 def choose_one_player(players): # takes dictionary of 2-20 players returned from query
     print(str(len(players)) + ' partial matches found:')
