@@ -2,9 +2,29 @@ import sys
 import json
 import requests
 
-def display_player(playerid): # takes tempus user id as string param
+def display_player(playerid): # takes tempus user id as param
+    print(playerid)
 
-def choose_one_player(players): # takes dictionary of 2-20 users returned from query
+def choose_one_player(players): # takes dictionary of 2-20 players returned from query
+    print(str(len(players)) + ' partial matches found:')
+
+    for i in range(0, len(players)): # range() is used because the index number needs to be printed
+        print(' ' + str(i+1) + '. ' + players[i]["name"])
+
+    index = input('Enter the number next to the player you wish to view (!q to go back): ')
+
+    while index != '!q': # !q is the string that allows user to exit from the function
+
+        if index in ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20']: # first make sure user inputted string that is a number between 1-20
+            if int(index) <= len(players): # since the prior statement ensures the input is an int between 1-20, the only other check is to make sure the index is not larger than the player query results
+                display_player(players[int(index)-1]["id"]) # the player info can be safely fetched
+                break # after player info is displayed, return to search player function
+            else: # the inputted index does not exist in the player result dictionary
+                print('Invalid input, please enter one of the displayed numbers.')
+        else: # user input is not an integer between 1-20
+            print('Invalid input, please enter one of the displayed numbers.')
+        
+        index = input('Enter the number next to the player you wish to view (!q to go back): ') # reprint the input query for the loop
 
 def search_player():
     query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
@@ -142,7 +162,7 @@ def search_map():
         query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
-    print('tempus.py\n 1. Query users\n 2. Query maps') # list choices
+    print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # list choices
     choice = input('Enter the number next to the feature you want to access (!q to quit): ') # scanner to read input
         
     while choice != '!q':
@@ -153,7 +173,7 @@ def main(argv): # takes array of options and arguments. Main is at the bottom be
         else: # display error msg
             print('Invalid input, please enter one of the displayed numbers.')
 
-        print('tempus.py\n 1. Query users\n 2. Query maps') # re-list choices for while loop
+        print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # re-list choices for while loop
         choice = input('Enter the number next to the feature you want to access (!q to quit): ')
 
     sys.exit() # if user quits at feature menu the program terminates
