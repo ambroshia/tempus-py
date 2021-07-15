@@ -14,6 +14,11 @@ def display_player(playerid): # takes tempus user id as param
             print(p["player_info"]["name"]) 
             print('Country: ' + p["player_info"]["country"])
 
+            # print rank info (format points to int to remove floating zero returned by API)
+            print('Rank ' + str(p["class_rank_info"]["3"]["rank"]) + ' Soldier (' + str(int(p["class_rank_info"]["3"]["points"])) + ' points)') # solly rank
+            print('Rank ' + str(p["class_rank_info"]["4"]["rank"]) + ' Demoman (' + str(int(p["class_rank_info"]["4"]["points"])) + ' points)') # demo rank
+            print('Rank ' + str(p["rank_info"]["rank"]) + ' Overall (' + str(int(p["rank_info"]["points"])) + ' points)') # overall rank
+
             print() # newline for formatting
 
         else: # there is some sort of http error
