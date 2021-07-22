@@ -184,19 +184,36 @@ def search_map():
         query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
-    print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # list choices
-    choice = input('Enter the number next to the feature you want to access (!q to quit): ') # scanner to read input
-        
-    while choice != '!q':
-        if choice == '1': # call user query function
-            search_player()
-        elif choice == '2': # call map query function
-            search_map()
-        else: # display error msg
-            print('Invalid input, please enter one of the displayed numbers.')
+    if len(argv) > 0: # if the program was launched with arguments don't prompt user input
+        if len(argv) < 3:
+            if argv[0].lower() == '-h' or argv[0].lower() == '--help':
+                print('help')
+            elif argv[0].lower() == '-m' or argv[0].lower() == '--map':
+                print('query map')
+            elif argv[0].lower() == '-p' or argv[0].lower() == '--player':
+                print('query player')
+            else:
+                print('Unknown argument.')
+                print('help')
 
-        print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # re-list choices for while loop
-        choice = input('Enter the number next to the feature you want to access (!q to quit): ')
+        else:
+            print('Too many arguments.')
+            print('help')
+
+    else: # run the program as normal if no arguments
+        print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # list choices
+        choice = input('Enter the number next to the feature you want to access (!q to quit): ') # scanner to read input
+            
+        while choice != '!q':
+            if choice == '1': # call user query function
+                search_player()
+            elif choice == '2': # call map query function
+                search_map()
+            else: # display error msg
+                print('Invalid input, please enter one of the displayed numbers.')
+
+            print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # re-list choices for while loop
+            choice = input('Enter the number next to the feature you want to access (!q to quit): ')
 
     sys.exit() # if user quits at feature menu the program terminates
 
