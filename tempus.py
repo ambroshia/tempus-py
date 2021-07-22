@@ -195,19 +195,14 @@ def search_map(arg):
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
     if len(argv) > 0: # if the program was launched with arguments don't prompt user input
-        if len(argv) < 3:
-            if argv[0].lower() == '-h' or argv[0].lower() == '--help':
-                print('help')
-            elif argv[0].lower() == '-m' or argv[0].lower() == '--map':
-                search_map(argv[1].lower())
-            elif argv[0].lower() == '-p' or argv[0].lower() == '--player':
-                search_player(argv[1].lower())
-            else:
-                print('Unknown argument.')
-                print('help')
-
+        if argv[0].lower() == '-h' or argv[0].lower() == '--help':
+            print('help')
+        elif argv[0].lower() == '-m' or argv[0].lower() == '--map':
+            search_map(argv[1].lower())
+        elif argv[0].lower() == '-p' or argv[0].lower() == '--player':
+            search_player(' '.join(argv[1:]).lower()) # join player name arguments (for player names that contain spaces)
         else:
-            print('Too many arguments.')
+            print('Unknown argument.')
             print('help')
 
     else: # run the program as normal if no arguments
