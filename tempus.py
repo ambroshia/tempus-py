@@ -211,9 +211,9 @@ def main(argv): # takes array of options and arguments. Main is at the bottom be
             
         while choice != '!q':
             if choice == '1': # call user query function
-                search_player()
+                search_player(None) # need to pass an arg, so pass None
             elif choice == '2': # call map query function
-                search_map()
+                search_map(None) # need to pass an arg, so pass None
             else: # display error msg
                 print('Invalid input, please enter one of the displayed numbers.')
 
