@@ -48,8 +48,11 @@ def choose_one_player(players): # takes dictionary of 2-20 players returned from
         
         index = input('Enter the number next to the player you wish to view (!q to go back): ') # reprint the input query for the loop
 
-def search_player():
-    query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
+def search_player(arg):
+    if arg != None: # don't prompt for user input if argument is passed
+        query = arg
+    else: # prompt for user input
+        query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
 
     while query != '!q': # !q is the string that allows user to exit from the function
 
@@ -77,6 +80,8 @@ def search_player():
         except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
             raise SystemExit(e)
 
+        if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
+            break
         query = input('Search for a player (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
 def display_map(mapname): # takes the full map name as a string parameter
@@ -152,8 +157,11 @@ def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query
         
         index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
     
-def search_map():
-    query = input('Search for a map (!q to go back): ').lower() # scanner to read input, convert to lower case
+def search_map(arg):
+    if arg != None: # don't prompt for user input if argument is passed
+        query = arg
+    else: # prompt for user input
+        query = input('Search for a map (!q to go back): ').lower() # scanner to read input, convert to lower case
 
     while query != '!q': # !q is the string that allows user to exit from the function
 
@@ -181,6 +189,8 @@ def search_map():
         except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
             raise SystemExit(e)
 
+        if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
+            break
         query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
@@ -189,9 +199,9 @@ def main(argv): # takes array of options and arguments. Main is at the bottom be
             if argv[0].lower() == '-h' or argv[0].lower() == '--help':
                 print('help')
             elif argv[0].lower() == '-m' or argv[0].lower() == '--map':
-                print('query map')
+                search_map(argv[1].lower())
             elif argv[0].lower() == '-p' or argv[0].lower() == '--player':
-                print('query player')
+                search_player(argv[1].lower())
             else:
                 print('Unknown argument.')
                 print('help')
