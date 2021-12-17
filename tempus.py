@@ -1,6 +1,7 @@
 import sys
 import json
 import requests
+import time
 
 def display_player(playerid): # takes tempus user id as param
     try: # attempt to send request
@@ -127,6 +128,18 @@ def display_map(mapname): # takes the full map name as a string parameter
                 print() # newline for formatting
             else: # there are no bonuses
                 print('no bonuses')
+            print('============') # divider for formatting
+
+            # print world records info
+            print('World Records:')
+            if len(m["soldier_runs"]) > 0: # if the map has been completed on solly, the array will not be empty
+                print('Solly: ' + time.strftime('%H:%M:%S', time.gmtime(m["soldier_runs"][0]["duration"])) + ' (' + m["soldier_runs"][0]["name"] +')') # uses python time library, specifically strftime function (originally from c) to convert seconds into hh:mm:ss format
+            else: # no one has completed the map as solly, or the map is T0 for solly
+                print('Solly: N/A')
+            if len(m["demoman_runs"]) > 0: # if the map has been completed on demo, the array will not be empty
+                print('Demo: ' + time.strftime('%H:%M:%S', time.gmtime(m["demoman_runs"][0]["duration"])) + ' (' + m["demoman_runs"][0]["name"] +')') # uses python time library, specifically strftime function (originally from c) to convert seconds into hh:mm:ss format
+            else: # no one has completed the map as demo, or the map is T0 for demo
+                print('Solly: N/A')
 
             print() # newline for formatting
 
