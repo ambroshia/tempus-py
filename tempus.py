@@ -3,31 +3,6 @@ import json
 import requests
 import time
 
-def display_player(playerid): # takes tempus user id as param
-    try: # attempt to send request
-        resp = requests.get('https://tempus.xyz/api/players/id/' + str(playerid) + '/stats') # query user details
-
-        if resp.status_code == 200: # make sure response 200 OK before parsing json response
-            p = json.loads(resp.text) # loads json as python dictionary
-            print() # newline for formatting
-
-            # print name and country
-            print(p["player_info"]["name"]) 
-            print('Country: ' + p["player_info"]["country"])
-
-            # print rank info (format points to int to remove floating zero returned by API)
-            print('Rank ' + str(p["class_rank_info"]["3"]["rank"]) + ' Soldier (' + str(int(p["class_rank_info"]["3"]["points"])) + ' points)') # solly rank
-            print('Rank ' + str(p["class_rank_info"]["4"]["rank"]) + ' Demoman (' + str(int(p["class_rank_info"]["4"]["points"])) + ' points)') # demo rank
-            print('Rank ' + str(p["rank_info"]["rank"]) + ' Overall (' + str(int(p["rank_info"]["points"])) + ' points)') # overall rank
-
-            print() # newline for formatting
-
-        else: # there is some sort of http error
-            print(resp.status_code + ' error') # output the error code
-
-    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
-        raise SystemExit(e)
-
 def choose_one_player(players): # takes dictionary of 2-20 players returned from query. Returns a valid player ID.
     print(str(len(players)) + ' partial matches found:')
 
@@ -47,6 +22,27 @@ def choose_one_player(players): # takes dictionary of 2-20 players returned from
             print('Invalid input, please enter one of the displayed numbers.')
         
         index = input('Enter the number next to the player you wish to view (!q to go back): ') # reprint the input query for the loop
+
+def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query. Returns a valid full map name.
+    print(str(len(maps)) + ' partial matches found:')
+
+    for i in range(0, len(maps)): # range() is used because the index number needs to be printed
+        print(' ' + str(i+1) + '. ' + maps[i]["name"])
+
+    index = input('Enter the number next to the map you wish to view (!q to go back): ')
+
+    while index != '!q': # !q is the string that allows user to exit from the function
+
+        if index in ['1','2','3','4','5']: # first make sure user inputted string that is a number between 1-5
+            if int(index) <= len(maps): # since the prior statement ensures the input is an int between 1-5, the only other check is to make sure the index is not larger than the map query results
+                return maps[int(index)-1]["name"] # the full map name can be safely returned to map search function
+                break # after map info is displayed, return to search map function
+            else: # the inputted index does not exist in the map result dictionary
+                print('Invalid input, please enter one of the displayed numbers.')
+        else: # user input is not an integer between 1-5
+            print('Invalid input, please enter one of the displayed numbers.')
+        
+        index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
 
 def query_player(query): # API interaction part of player query userflow. When successful, returns a valid player ID.
     try: # attempt to send request
@@ -76,22 +72,58 @@ def query_player(query): # API interaction part of player query userflow. When s
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e) # program is exited
 
-def search_player(arg): # User / UI interaction part of player query userflow
-    if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
-        query = arg
-    else: # prompt for user input
-        query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
+def query_map(query): # API interaction part of map query userflow. When successful, returns a valid full map name.
+    try: # attempt to send request
+        resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
 
-    while query != '!q': # !q is the string that allows user to exit from the function
+        if resp.status_code == 200: # make sure response 200 OK before parsing json response
+            j = json.loads(resp.text) # loads json as python dictionary
+                
+            if len(j["maps"]) > 5: # the query returned more than 5 results (API already handles this but this is here just in case)
+                print('Too many results. Please enter a more specific query.')
+                return None
+                
+            elif len(j["maps"]) == 1: # one exact match was found
+                return j["maps"][0]["name"] 
 
-        result = query_player(query) # Send the query string to API interaction function
+            elif len(j["maps"]) == 0: # no maps containing the string was found
+                print('No maps with a matching name was found.')
+                return None
+                    
+            else: # 2-5 results were found
+                return choose_one_map(j["maps"]) # pass dict of maps to function to handle multiple results, the final chosen map name is returned to map search function
 
-        if result != None: # API interaction functions will print out error and return None object if any errors occur
-            display_player(result) # The result will be a valid tempus ID in the case the player was queried successfully, so it can be passed to the the player display function.
+        else: # there is some sort of http error
+            print(resp.status_code + ' error') # output the error code
+            return None
 
-        if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
-            break
-        query = input('Search for a player (!q to go back): ').lower() # need to put scanner again here to prompt user input
+    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+        raise SystemExit(e) # program is exited
+
+def display_player(playerid): # takes tempus user id as param
+    try: # attempt to send request
+        resp = requests.get('https://tempus.xyz/api/players/id/' + str(playerid) + '/stats') # query user details
+
+        if resp.status_code == 200: # make sure response 200 OK before parsing json response
+            p = json.loads(resp.text) # loads json as python dictionary
+            print() # newline for formatting
+
+            # print name and country
+            print(p["player_info"]["name"]) 
+            print('Country: ' + p["player_info"]["country"])
+
+            # print rank info (format points to int to remove floating zero returned by API)
+            print('Rank ' + str(p["class_rank_info"]["3"]["rank"]) + ' Soldier (' + str(int(p["class_rank_info"]["3"]["points"])) + ' points)') # solly rank
+            print('Rank ' + str(p["class_rank_info"]["4"]["rank"]) + ' Demoman (' + str(int(p["class_rank_info"]["4"]["points"])) + ' points)') # demo rank
+            print('Rank ' + str(p["rank_info"]["rank"]) + ' Overall (' + str(int(p["rank_info"]["points"])) + ' points)') # overall rank
+
+            print() # newline for formatting
+
+        else: # there is some sort of http error
+            print(resp.status_code + ' error') # output the error code
+
+    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+        raise SystemExit(e)
 
 def display_map(mapname): # takes the full map name as a string parameter
     try: # attempt to send request
@@ -157,55 +189,26 @@ def display_map(mapname): # takes the full map name as a string parameter
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query. Returns a valid full map name.
-    print(str(len(maps)) + ' partial matches found:')
+def search_time(map, player): # look up a player's time for a particular map
+    return None
 
-    for i in range(0, len(maps)): # range() is used because the index number needs to be printed
-        print(' ' + str(i+1) + '. ' + maps[i]["name"])
+def search_player(arg): # User / UI interaction part of player query userflow
+    if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
+        query = arg
+    else: # prompt for user input
+        query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
 
-    index = input('Enter the number next to the map you wish to view (!q to go back): ')
+    while query != '!q': # !q is the string that allows user to exit from the function
 
-    while index != '!q': # !q is the string that allows user to exit from the function
+        result = query_player(query) # Send the query string to API interaction function
 
-        if index in ['1','2','3','4','5']: # first make sure user inputted string that is a number between 1-5
-            if int(index) <= len(maps): # since the prior statement ensures the input is an int between 1-5, the only other check is to make sure the index is not larger than the map query results
-                return maps[int(index)-1]["name"] # the full map name can be safely returned to map search function
-                break # after map info is displayed, return to search map function
-            else: # the inputted index does not exist in the map result dictionary
-                print('Invalid input, please enter one of the displayed numbers.')
-        else: # user input is not an integer between 1-5
-            print('Invalid input, please enter one of the displayed numbers.')
-        
-        index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
+        if result != None: # API interaction functions will print out error and return None object if any errors occur
+            display_player(result) # The result will be a valid tempus ID in the case the player was queried successfully, so it can be passed to the the player display function.
 
-def query_map(query): # API interaction part of map query userflow. When successful, returns a valid full map name.
-    try: # attempt to send request
-        resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+        if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
+            break
+        query = input('Search for a player (!q to go back): ').lower() # need to put scanner again here to prompt user input
 
-        if resp.status_code == 200: # make sure response 200 OK before parsing json response
-            j = json.loads(resp.text) # loads json as python dictionary
-                
-            if len(j["maps"]) > 5: # the query returned more than 5 results (API already handles this but this is here just in case)
-                print('Too many results. Please enter a more specific query.')
-                return None
-                
-            elif len(j["maps"]) == 1: # one exact match was found
-                return j["maps"][0]["name"] 
-
-            elif len(j["maps"]) == 0: # no maps containing the string was found
-                print('No maps with a matching name was found.')
-                return None
-                    
-            else: # 2-5 results were found
-                return choose_one_map(j["maps"]) # pass dict of maps to function to handle multiple results, the final chosen map name is returned to map search function
-
-        else: # there is some sort of http error
-            print(resp.status_code + ' error') # output the error code
-            return None
-
-    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
-        raise SystemExit(e) # program is exited
-    
 def search_map(arg): # User / UI interaction part of map query userflow
     if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
         query = arg
@@ -222,9 +225,6 @@ def search_map(arg): # User / UI interaction part of map query userflow
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
         query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
-
-def search_time(map, player): # look up a player's time for a particular map
-    return None
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
     if len(argv) > 0: # if the program was launched with arguments don't prompt user input
