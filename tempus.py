@@ -230,8 +230,7 @@ def display_map(mapname): # takes the full map name as a string parameter
         raise SystemExit(e)
 
 def search_time(player, mapname, state): # User / UI interaction part of userflow to look up a player's times for a map.
-    query = None
-    while True: # The function will continually look up map runs until the exit signal !q is inputted
+    while True: # The function will continually look up map runs until the exit signal !q is inputted in one of the subqueries below.
 
         if player == None: # player info was not passed, need to ask user to input player
             while True: # infinite loop, as the function is designed to continually prompt the user to query a player, until a player is found, or until the function is exited via !q
