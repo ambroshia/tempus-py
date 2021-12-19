@@ -89,31 +89,6 @@ def search_player(arg): # User / UI interaction part of player query userflow
         if result != None: # API interaction functions will print out error and return None object if any errors occur
             display_player(result) # The result will be a valid tempus ID in the case the player was queried successfully, so it can be passed to the the player display function.
 
-        '''
-        try: # attempt to send request
-            resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
-
-            if resp.status_code == 200: # make sure response 200 OK before parsing json response
-                j = json.loads(resp.text) # loads json as python dictionary
-                
-                if len(j["players"]) > 20: # the query returned more than 20 results (API already handles this but this is here just in case)
-                    print('Too many results. Please enter a more specific query.')
-                
-                elif len(j["players"]) == 1: # one exact match was found
-                    display_player(j["players"][0]["id"])
-
-                elif len(j["players"]) == 0: # no players with name containing the string was found
-                    print('No players with a matching name was found.')
-                    
-                else: # 2-20 results were found
-                    choose_one_player(j["players"]) # pass dict of players to function to handle multiple results
-
-            else: # there is some sort of http error
-                print(resp.status_code + ' error') # output the error code
-
-        except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
-            raise SystemExit(e)
-        '''
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
         query = input('Search for a player (!q to go back): ').lower() # need to put scanner again here to prompt user input
