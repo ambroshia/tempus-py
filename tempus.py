@@ -100,15 +100,15 @@ def query_map(query): # API interaction part of map query userflow. When success
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e) # program is exited
 
-def query_soldier_time(playerid, map): # API interaction part of userflow to look up a player's soldier time for a map. When successful, returns dict object containing a player's soldier time for a map.
+def query_soldier_time(playerid, mapname): # API interaction part of userflow to look up a player's soldier time for a map. When successful, returns dict object containing a player's soldier time for a map.
     try: # attempt to send request
         # original url: https://tempus.xyz/api/maps/name/${map}/zones/typeindex/${zoneType}/${zoneIndex}/records/player/${player.id}/${classIndex}
-        resp = requests.get('https://tempus.xyz/api/maps/name/' + map + '/zones/typeindex/map/1/records/player/' + playerid + '/3') # classIndex 3 is soldier
+        resp = requests.get('https://tempus.xyz/api/maps/name/' + mapname + '/zones/typeindex/map/1/records/player/' + str(playerid) + '/3') # classIndex 3 is soldier
 
         if resp.status_code == 200: # make sure response 200 OK before parsing json response
             r = json.loads(resp.text) # loads json as python dictionary
 
-            if len(r["result"]) > 0: # The result section is not empty (The player has completed the map at least once as soldier)
+            if r["result"] != None: # The result section is not empty (The player has completed the map at least once as soldier)
                 return r # returns the entire dictionary containing the run and map run info
             else: # The result section is empty (The player has not completed the map)
                 return None
@@ -120,15 +120,15 @@ def query_soldier_time(playerid, map): # API interaction part of userflow to loo
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def query_demo_time(playerid, map): # API interaction part of userflow to look up a player's demoman time for a map. When successful, returns dict object containing a player's demoman time for a map.
+def query_demo_time(playerid, mapname): # API interaction part of userflow to look up a player's demoman time for a map. When successful, returns dict object containing a player's demoman time for a map.
     try: # attempt to send request
         # original url: https://tempus.xyz/api/maps/name/${map}/zones/typeindex/${zoneType}/${zoneIndex}/records/player/${player.id}/${classIndex}
-        resp = requests.get('https://tempus.xyz/api/maps/name/' + map + '/zones/typeindex/map/1/records/player/' + playerid + '/4') # classIndex 4 is demoman
+        resp = requests.get('https://tempus.xyz/api/maps/name/' + mapname + '/zones/typeindex/map/1/records/player/' + str(playerid) + '/4') # classIndex 4 is demoman
 
         if resp.status_code == 200: # make sure response 200 OK before parsing json response
             r = json.loads(resp.text) # loads json as python dictionary
 
-            if len(r["result"]) > 0: # The result section is not empty (The player has completed the map at least once as soldier)
+            if r["result"] != None: # The result section is not empty (The player has completed the map at least once as soldier)
                 return r # returns the entire dictionary containing the run and map run info
             else: # The result section is empty (The player has not completed the map)
                 return None
@@ -229,44 +229,55 @@ def display_map(mapname): # takes the full map name as a string parameter
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def search_time(player, map): # User / UI interaction part of userflow to look up a player's times for a map.
-    if player == None: # player info was not passed, need to ask user to input player
-        while True: # infinite loop, as the function is designed to continually prompt the user to query a player, until a player is found, or until the function is exited via !q
-            query = input('Search for the player whose records you wish to find (!q to go back): ').lower()
+def search_time(player, mapname, state): # User / UI interaction part of userflow to look up a player's times for a map.
+    query = None
+    while (query != '!q'): # The function will continually look up map runs until the exit signal
 
-            if (input == '!q'):
-                return None # this will exit the search_time function instantly
+        if player == None: # player info was not passed, need to ask user to input player
+            while True: # infinite loop, as the function is designed to continually prompt the user to query a player, until a player is found, or until the function is exited via !q
+                query = input('Search for the player whose records you wish to find (!q to go back): ').lower()
 
-            player = query_player(query) # pass user inputted string into player query function
+                if (query == '!q'):
+                    return None # this will exit the search_time function instantly
 
-            if player != None: # break from the infinite loop after a player has been found (the player value is filled)
-                break
+                player = query_player(query) # pass user inputted string into player query function
 
-    if map == None: # map name was not passed, need to ask user to input map name
-        while True: # infinite loop, as the function is designed to continually prompt the user to query a map, until a map is found, or until the function is exited via !q
-            query = input('Search for map runs by ' + player["name"] + ' (!q to go back): ').lower()
+                if player != None: # break from the infinite loop after a player has been found (the player value is filled)
+                    break
 
-            if (input == '!q'):
-                return None # this will exit the search_time function instantly
+        if mapname == None: # map name was not passed, need to ask user to input map name
+            while True: # infinite loop, as the function is designed to continually prompt the user to query a map, until a map is found, or until the function is exited via !q
+                query = input('Search for map runs by ' + player["name"] + ' (!q to go back): ').lower()
 
-            map = query_map(query) # pass user inputted string into map query function
+                if (query == '!q'):
+                    return None # this will exit the search_time function instantly
 
-            if map != None: # break from the infinite loop after a map has been found (the map value is filled)
-                break
+                mapname = query_map(query) # pass user inputted string into map query function
 
-    stime = query_soldier_time(player["id"], map)
-    if stime != None: # a soldier record on the map was found
-        print('Soldier: ')
-    else:
-        print('Soldier: No record found.')
+                if mapname != None: # break from the infinite loop after a map has been found (the map value is filled)
+                    break
 
-    dtime = query_demo_time(player["id"], map)
-    if dtime != None: # a demoman record on the map was found
-        print('Demoman: ')
-    else:
-        print('Demoman: No record found.')
+        print() # newline for formatting
+        sollytime = query_soldier_time(player["id"], mapname) # pass player id and map name into API function to fetch run info
+        if sollytime != None: # a soldier record on the map was found
+            print('Soldier: ' + player["name"] + ' is ranked ' + str(sollytime["result"]["rank"]) + '/' + str(sollytime["completion_info"]["soldier"]) + ' on ' + mapname + ' with time: ' + time.strftime('%H:%M:%S', time.gmtime(sollytime["result"]["duration"])))
+        else:
+            print('Soldier: No record found.')
 
-    print() # newline for formatting
+        demotime = query_demo_time(player["id"], mapname)  # pass player id and map name into API function to fetch run info
+        if demotime != None: # a demoman record on the map was found
+            print('Demoman: ' + player["name"] + ' is ranked ' +  str(demotime["result"]["rank"]) + '/' + str(demotime["completion_info"]["demoman"]) + ' on ' + mapname + ' with time: ' + time.strftime('%H:%M:%S', time.gmtime(demotime["result"]["duration"])))
+        else:
+            print('Demoman: No record found.')
+        print() # newline for formatting
+
+        # state is passed when initialising function, and dictates which value needs to be reset at the end of the query.
+        # e.g. if search_time is called from the main menu, or from a player's page, the mapname will need to be reset on each loop to allow the user to query any map runs for the given user
+        #      whereas if search_time is called from a map's page, the player will need to be reset on each loop to allow the user to look up runs by different players for the given map
+        if state == 0: # mapname needs to be reset - function is called from main menu / player info page
+            mapname = None
+        else: # player needs to be reset - function is called from map info page
+            player = None
 
 def search_player(arg): # User / UI interaction part of player query userflow
     if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
@@ -315,7 +326,7 @@ def main(argv): # takes array of options and arguments. Main is at the bottom be
             print('help')
 
     else: # run the program as normal if no arguments
-        print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # list choices
+        print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps\n 3. Query map runs') # list choices
         choice = input('Enter the number next to the feature you want to access (!q to quit): ') # scanner to read input
             
         while choice != '!q':
@@ -323,10 +334,12 @@ def main(argv): # takes array of options and arguments. Main is at the bottom be
                 search_player(None) # need to pass an arg, so pass None
             elif choice == '2': # call map query function
                 search_map(None) # need to pass an arg, so pass None
+            elif choice == '3': # call map query map run times
+                search_time(None, None, 0) # args are required, search_time function will automatically ask players to fill in the args if none are provided.
             else: # display error msg
                 print('Invalid input, please enter one of the displayed numbers.')
 
-            print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps') # re-list choices for while loop
+            print('tempus.py - lookup users and maps\n 1. Query users\n 2. Query maps\n 3. Query map runs') # re-list choices for while loop
             choice = input('Enter the number next to the feature you want to access (!q to quit): ')
 
     sys.exit() # if user quits at feature menu the program terminates
