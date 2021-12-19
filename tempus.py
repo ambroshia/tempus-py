@@ -28,7 +28,7 @@ def display_player(playerid): # takes tempus user id as param
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def choose_one_player(players): # takes dictionary of 2-20 players returned from query
+def choose_one_player(players): # takes dictionary of 2-20 players returned from query. Returns a valid player ID.
     print(str(len(players)) + ' partial matches found:')
 
     for i in range(0, len(players)): # range() is used because the index number needs to be printed
@@ -48,7 +48,7 @@ def choose_one_player(players): # takes dictionary of 2-20 players returned from
         
         index = input('Enter the number next to the player you wish to view (!q to go back): ') # reprint the input query for the loop
 
-def query_player(query): # API interaction part of player query userflow
+def query_player(query): # API interaction part of player query userflow. When successful, returns a valid player ID.
     try: # attempt to send request
         resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
 
@@ -67,7 +67,7 @@ def query_player(query): # API interaction part of player query userflow
                 return None
                     
             else: # 2-20 results were found
-                return choose_one_player(j["players"]) # pass dict of players to function to handle multiple results, the final chosen player object is returned to player search function
+                return choose_one_player(j["players"]) # pass dict of players to function to handle multiple results, the final chosen player's id is returned to player search function
 
         else: # there is some sort of http error
             print(resp.status_code + ' error') # output the error code
@@ -157,7 +157,7 @@ def display_map(mapname): # takes the full map name as a string parameter
     except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
         raise SystemExit(e)
 
-def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query
+def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query. Returns a valid full map name.
     print(str(len(maps)) + ' partial matches found:')
 
     for i in range(0, len(maps)): # range() is used because the index number needs to be printed
@@ -169,7 +169,7 @@ def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query
 
         if index in ['1','2','3','4','5']: # first make sure user inputted string that is a number between 1-5
             if int(index) <= len(maps): # since the prior statement ensures the input is an int between 1-5, the only other check is to make sure the index is not larger than the map query results
-                display_map(maps[int(index)-1]["name"]) # the map info can be safely fetched
+                return maps[int(index)-1]["name"] # the full map name can be safely returned to map search function
                 break # after map info is displayed, return to search map function
             else: # the inputted index does not exist in the map result dictionary
                 print('Invalid input, please enter one of the displayed numbers.')
@@ -178,8 +178,33 @@ def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query
         
         index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
 
-def query_map(query): # API interaction part of map query userflow
-    return None
+def query_map(query): # API interaction part of map query userflow. When successful, returns a valid full map name.
+    try: # attempt to send request
+        resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+
+        if resp.status_code == 200: # make sure response 200 OK before parsing json response
+            j = json.loads(resp.text) # loads json as python dictionary
+                
+            if len(j["maps"]) > 5: # the query returned more than 5 results (API already handles this but this is here just in case)
+                print('Too many results. Please enter a more specific query.')
+                return None
+                
+            elif len(j["maps"]) == 1: # one exact match was found
+                return j["maps"][0]["name"] 
+
+            elif len(j["maps"]) == 0: # no maps containing the string was found
+                print('No maps with a matching name was found.')
+                return None
+                    
+            else: # 2-5 results were found
+                return choose_one_map(j["maps"]) # pass dict of maps to function to handle multiple results, the final chosen map name is returned to map search function
+
+        else: # there is some sort of http error
+            print(resp.status_code + ' error') # output the error code
+            return None
+
+    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+        raise SystemExit(e) # program is exited
     
 def search_map(arg): # User / UI interaction part of map query userflow
     if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
@@ -189,29 +214,10 @@ def search_map(arg): # User / UI interaction part of map query userflow
 
     while query != '!q': # !q is the string that allows user to exit from the function
 
-        try: # attempt to send request
-            resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+        result = query_map(query) # Send the query string to API interaction function
 
-            if resp.status_code == 200: # make sure response 200 OK before parsing json response
-                j = json.loads(resp.text) # loads json as python dictionary
-                
-                if len(j["maps"]) > 5: # the query returned more than 5 results (API already handles this but this is here just in case)
-                    print('Too many results. Please enter a more specific query.')
-                
-                elif len(j["maps"]) == 1: # one exact match was found
-                    display_map(j["maps"][0]["name"])
-
-                elif len(j["maps"]) == 0: # no maps containing the string was found
-                    print('No maps with a matching name was found.')
-                    
-                else: # 2-5 results were found
-                    choose_one_map(j["maps"]) # pass dict of maps to function to handle multiple results
-
-            else: # there is some sort of http error
-                print(resp.status_code + ' error') # output the error code
-
-        except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
-            raise SystemExit(e) # program is exited
+        if result != None: # API interaction functions will print out error and return None object if any errors occur
+            display_map(result) # The result will be a valid full map name in the case the map was queried successfully, so it can be passed to the the map display function.
 
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
