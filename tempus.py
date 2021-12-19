@@ -40,8 +40,7 @@ def choose_one_player(players): # takes dictionary of 2-20 players returned from
 
         if index in ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20']: # first make sure user inputted string that is a number between 1-20
             if int(index) <= len(players): # since the prior statement ensures the input is an int between 1-20, the only other check is to make sure the index is not larger than the player query results
-                display_player(players[int(index)-1]["id"]) # the player info can be safely fetched
-                break # after player info is displayed, return to search player function
+                return players[int(index)-1]["id"] # the player info can be safely returned to player search function
             else: # the inputted index does not exist in the player result dictionary
                 print('Invalid input, please enter one of the displayed numbers.')
         else: # user input is not an integer between 1-20
@@ -49,14 +48,48 @@ def choose_one_player(players): # takes dictionary of 2-20 players returned from
         
         index = input('Enter the number next to the player you wish to view (!q to go back): ') # reprint the input query for the loop
 
-def search_player(arg):
-    if arg != None: # don't prompt for user input if argument is passed
+def query_player(query): # API interaction part of player query userflow
+    try: # attempt to send request
+        resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
+
+        if resp.status_code == 200: # make sure response 200 OK before parsing json response
+            j = json.loads(resp.text) # loads json as python dictionary
+                
+            if len(j["players"]) > 20: # the query returned more than 20 results (API already handles this but this is here just in case)
+                print('Too many results. Please enter a more specific query.')
+                return None
+                
+            elif len(j["players"]) == 1: # one exact match was found
+                return j["players"][0]["id"]
+
+            elif len(j["players"]) == 0: # no players with name containing the string was found
+                print('No players with a matching name was found.')
+                return None
+                    
+            else: # 2-20 results were found
+                return choose_one_player(j["players"]) # pass dict of players to function to handle multiple results, the final chosen player object is returned to player search function
+
+        else: # there is some sort of http error
+            print(resp.status_code + ' error') # output the error code
+            return None
+
+    except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
+        raise SystemExit(e) # program is exited
+
+def search_player(arg): # User / UI interaction part of player query userflow
+    if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
         query = arg
     else: # prompt for user input
         query = input('Search for a player (!q to go back): ').lower() # scanner to read input, convert to lower case
 
     while query != '!q': # !q is the string that allows user to exit from the function
 
+        result = query_player(query) # Send the query string to API interaction function
+
+        if result != None: # API interaction functions will print out error and return None object if any errors occur
+            display_player(result) # The result will be a valid tempus ID in the case the player was queried successfully, so it can be passed to the the player display function.
+
+        '''
         try: # attempt to send request
             resp = requests.get('https://tempus.xyz/api/search/playersAndMaps/' + query) # only a maximum of 20 players and 5 maps will be returned by the API.
 
@@ -80,7 +113,7 @@ def search_player(arg):
 
         except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
             raise SystemExit(e)
-
+        '''
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
         query = input('Search for a player (!q to go back): ').lower() # need to put scanner again here to prompt user input
@@ -169,9 +202,12 @@ def choose_one_map(maps): # takes dictionary of 2-5 maps returned from query
             print('Invalid input, please enter one of the displayed numbers.')
         
         index = input('Enter the number next to the map you wish to view (!q to go back): ') # reprint the input query for the loop
+
+def query_map(query): # API interaction part of map query userflow
+    return None
     
-def search_map(arg):
-    if arg != None: # don't prompt for user input if argument is passed
+def search_map(arg): # User / UI interaction part of map query userflow
+    if arg != None: # don't prompt for user input if argument is passed (when program is launched from CLI with args)
         query = arg
     else: # prompt for user input
         query = input('Search for a map (!q to go back): ').lower() # scanner to read input, convert to lower case
@@ -200,11 +236,14 @@ def search_map(arg):
                 print(resp.status_code + ' error') # output the error code
 
         except requests.exceptions.RequestException as e:  # all request errors inherit from RequestException
-            raise SystemExit(e)
+            raise SystemExit(e) # program is exited
 
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
         query = input('Search for a map (!q to go back): ').lower() # need to put scanner again here to prompt user input
+
+def search_time(map, player): # look up a player's time for a particular map
+    return None
 
 def main(argv): # takes array of options and arguments. Main is at the bottom because like in c, functions need to be defined above where they are used
     if len(argv) > 0: # if the program was launched with arguments don't prompt user input
