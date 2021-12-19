@@ -231,14 +231,14 @@ def display_map(mapname): # takes the full map name as a string parameter
 
 def search_time(player, mapname, state): # User / UI interaction part of userflow to look up a player's times for a map.
     query = None
-    while (query != '!q'): # The function will continually look up map runs until the exit signal
+    while True: # The function will continually look up map runs until the exit signal !q is inputted
 
         if player == None: # player info was not passed, need to ask user to input player
             while True: # infinite loop, as the function is designed to continually prompt the user to query a player, until a player is found, or until the function is exited via !q
                 query = input('Search for the player whose records you wish to find (!q to go back): ').lower()
 
                 if (query == '!q'):
-                    return None # this will exit the search_time function instantly
+                    return # this will exit the search_time function instantly
 
                 player = query_player(query) # pass user inputted string into player query function
 
@@ -250,7 +250,7 @@ def search_time(player, mapname, state): # User / UI interaction part of userflo
                 query = input('Search for map runs by ' + player["name"] + ' (!q to go back): ').lower()
 
                 if (query == '!q'):
-                    return None # this will exit the search_time function instantly
+                    return # this will exit the search_time function instantly
 
                 mapname = query_map(query) # pass user inputted string into map query function
 
@@ -271,7 +271,7 @@ def search_time(player, mapname, state): # User / UI interaction part of userflo
             print('Demoman: No record found.')
         print() # newline for formatting
 
-        # state is passed when initialising function, and dictates which value needs to be reset at the end of the query.
+        # state is passed when initialising function, and dictates which value needs to be reset at the end of each loop of the function
         # e.g. if search_time is called from the main menu, or from a player's page, the mapname will need to be reset on each loop to allow the user to query any map runs for the given user
         #      whereas if search_time is called from a map's page, the player will need to be reset on each loop to allow the user to look up runs by different players for the given map
         if state == 0: # mapname needs to be reset - function is called from main menu / player info page
