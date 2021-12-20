@@ -290,6 +290,7 @@ def search_player(arg): # User / UI interaction part of player query userflow
 
         if result != None: # API interaction functions will print out error and return None object if any errors occur
             display_player(result["id"]) # The result will be a valid player object in the case the player was queried successfully, so it can be passed to the the player display function.
+            search_time(result, None, 0) # Also call the map time search function, passing in the resulting player object, no maps, and with state number 0 (function will continually ask users to input maps until exited)
 
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
@@ -307,6 +308,7 @@ def search_map(arg): # User / UI interaction part of map query userflow
 
         if result != None: # API interaction functions will print out error and return None object if any errors occur
             display_map(result) # The result will be a valid full map name in the case the map was queried successfully, so it can be passed to the the map display function.
+            search_time(None, result, 1) # Also call the map time search function, passing the map name, no players, and with state number 1 (function will continually ask users to input players until exited)
 
         if arg != None: # If query called at launch with arguments, program should terminate after returning result and not ask input again
             break
